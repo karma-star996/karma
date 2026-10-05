@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Snake — Home</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+  <main class="console">
+    <div class="console__top-bar">
+      <p class="console__brand">PY <span>&#9679;</span> SNAKE 3310</p>
+      <div class="console__nav-icons">
+        <button id="mute-btn" class="icon-btn" title="Toggle Sound">🔊</button>
+        <button id="help-btn" class="icon-btn" title="How to Play">❓</button>
+      </div>
+    </div>
+
+    <div class="screen">
+      <div class="screen__header">
+        <span>HI {{ highscore }}</span>
+        <span>READY</span>
+      </div>
+
+      <h1 class="title">SNAKE</h1>
+      <p class="subtitle">Python Project</p>
+
+      <div class="snake-divider">
+        <span></span><span></span><span></span><span></span><span></span>
+      </div>
+
+      <!-- Mode Quick Selector -->
+      <div style="text-align: center; margin-bottom: 8px;">
+        <span style="font-size: 8px; font-family:'Press Start 2P', monospace; color: var(--lcd-mid);">MODE</span>
+        <div class="pill-group">
+          <button class="pill-btn" data-mode-choice="classic">CLASSIC</button>
+          <button class="pill-btn" data-mode-choice="wrap">WRAP</button>
+        </div>
+      </div>
+
+      <a href="{{ url_for('game') }}" class="btn btn--primary" style="display:block; margin-bottom: 12px;">PLAY</a>
+
+      <!-- Leaderboard Preview -->
+      {% if leaderboard %}
+      <div style="margin-top: 10px;">
+        <p style="font-family:'Press Start 2P', monospace; font-size: 8px; color: var(--lcd-mid); margin: 0 0 6px;">TOP SCORES</p>
+        <table class="leaderboard-table">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>NAME</th>
+              <th>SCORE</th>
+              <th>MODE</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for entry in leaderboard %}
+            <tr>
+              <td>{{ loop.index }}</td>
+              <td>{{ entry.name }}</td>
+              <td>{{ entry.score }}</td>
+              <td>{{ entry.mode }}</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      {% endif %}
+
+      <!-- Help / How to Play Modal Overlay -->
+      <div id="help-modal" class="overlay-modal">
+        <h2 class="overlay-title">HOW TO PLAY</h2>
+        <div class="food-guide-list">
+          <div class="food-guide-item">
+            <div class="food-icon-demo" style="background: var(--lcd-dark);"></div>
+            <div><strong>Regular Food</strong><br>+10 pts. Grows snake.</div>
+          </div>
+          <div class="food-guide-item">
+            <div class="food-icon-demo" style="background: var(--accent-gold);"></div>
+            <div><strong>Golden Apple</strong><br>+30 pts. Timed bonus!</div>
+          </div>
+          <div class="food-guide-item">
+            <div class="food-icon-demo" style="background: var(--accent-cyan);"></div>
+            <div><strong>Slow Snail Berry</strong><br>Reduces speed for 6s.</div>
+          </div>
+          <div class="food-guide-item">
+            <div class="food-icon-demo" style="background: var(--accent-pink);"></div>
+            <div><strong>Ghost Berry</strong><br>Pass through walls & body!</div>
+          </div>
+          <div style="border-top: 1px dashed var(--lcd-mid); padding-top: 6px; font-size: 9px;">
+            ⚡ Eat quickly in succession for <strong>Combo Multipliers</strong> up to 5x!
+          </div>
+        </div>
+        <button id="close-help-btn" class="btn btn--primary btn--sm" style="width: 100%; margin-top: 8px;">GOT IT</button>
+      </div>
+    </div>
+
+    <p class="instructions">Use <kbd>&#8592;</kbd> <kbd>&#8593;</kbd> <kbd>&#8594;</kbd> <kbd>&#8595;</kbd> or swipe on the screen to move.</p>
+  </main>
+
+  <script src="{{ url_for('static', filename='audio.js') }}"></script>
+  <script>
+    // Theme sync
+    const savedTheme = localStorage.getItem("snake_theme") || "nokia";
+    document.body.dataset.theme = savedTheme;
+
+    // Mode choice sync
+    const savedMode = localStorage.getItem("snake_mode") || "classic";
+    document.querySelectorAll("[data-mode-choice]").forEach(btn => {
+      if (btn.dataset.modeChoice === savedMode) btn.classList.add("active");
+      btn.addEventListener("click", () => {
+        document.querySelectorAll("[data-mode-choice]").forEach(b => b.classList.remove("active"));
+        btn.classList.add("active");
+        localStorage.setItem("snake_mode", btn.dataset.modeChoice);
+        window.soundFX?.playClick();
+      });
+    });
+
+    // Mute toggle
+    const muteBtn = document.getElementById("mute-btn");
+    if (muteBtn) {
+      const updateIcon = () => muteBtn.textContent = window.soundFX?.isMuted() ? "🔇" : "🔊";
+      updateIcon();
+      muteBtn.addEventListener("click", () => {
+        window.soundFX?.toggleMute();
+        updateIcon();
+      });
+    }
+
+    // Help modal
+    const helpBtn = document.getElementById("help-btn");
+    const closeHelpBtn = document.getElementById("close-help-btn");
+    const helpModal = document.getElementById("help-modal");
+
+    if (helpBtn && helpModal) {
+      helpBtn.addEventListener("click", () => {
+        window.soundFX?.playClick();
+        helpModal.classList.add("active");
+      });
+    }
+    if (closeHelpBtn && helpModal) {
+      closeHelpBtn.addEventListener("click", () => {
+        window.soundFX?.playClick();
+        helpModal.classList.remove("active");
+      });
+    }
+  </script>
+</body>
+</html>

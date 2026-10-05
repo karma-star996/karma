@@ -1,0 +1,39 @@
+{
+  "highscore": 220,
+  "leaderboard": [
+    {
+      "name": "P2",
+      "score": 220,
+      "mode": "Classic",
+      "date": "2026-09-21"
+    },
+    {
+      "name": "KARMA",
+      "score": 190,
+      "mode": "Classic",
+      "date": "2026-09-21"
+    },
+    {
+      "name": "PLAYER",
+      "score": 160,
+      "mode": "Wrap",
+      "date": "2026-09-21"
+    },
+    {
+      "name": "JIYA",
+      "score": 100,
+      "mode": "Wrap",
+      "date": "2026-09-22"
+    },
+    {
+      "name": "ACE",
+      "score": 30,
+      "mode": "Classic",
+      "date": "2026-09-21"
+    }
+  ],
+  "stats": {
+    "games_played": 3,
+    "total_food": 21
+  }
+}

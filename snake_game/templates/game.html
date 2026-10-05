@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Snake — Playing</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+  <main class="console">
+    <div class="console__top-bar">
+      <p class="console__brand">PY <span>&#9679;</span> SNAKE 3310</p>
+      <div class="console__nav-icons">
+        <button id="mute-btn" class="icon-btn" title="Toggle Sound">🔊</button>
+        <button id="pause-btn" class="icon-btn" title="Pause Game">⏸</button>
+        <button id="settings-btn" class="icon-btn" title="Settings">⚙</button>
+      </div>
+    </div>
+
+    <div class="screen">
+      <!-- In-Game HUD -->
+      <div class="screen__header">
+        <div class="screen__header-left">
+          <span>SCORE <span id="score-value">0</span></span>
+          <span id="combo-badge" class="combo-badge">2x COMBO</span>
+        </div>
+        <div class="screen__header-right">
+          <span>LVL <span id="level-value">1</span></span>
+          <span>HI <span id="hiscore-value">{{ highscore }}</span></span>
+        </div>
+      </div>
+
+      <!-- Power-up Active Banner -->
+      <div id="powerup-bar" class="powerup-bar">
+        <span id="powerup-name">POWERUP</span>
+        <span id="powerup-timer">5s</span>
+        <div id="powerup-progress" class="powerup-progress"></div>
+      </div>
+
+      <!-- Main Game Canvas -->
+      <canvas id="game-canvas" width="360" height="360"></canvas>
+
+      <!-- Pause Menu Overlay -->
+      <div id="pause-modal" class="overlay-modal">
+        <h2 class="overlay-title">GAME PAUSED</h2>
+        <div class="overlay-menu">
+          <button id="resume-btn" class="btn btn--primary">RESUME</button>
+          <button id="restart-btn" class="btn btn--ghost">RESTART</button>
+          <a href="{{ url_for('home') }}" class="btn btn--ghost">QUIT TO MENU</a>
+        </div>
+      </div>
+
+      <!-- Settings Menu Overlay -->
+      <div id="settings-modal" class="overlay-modal">
+        <h2 class="overlay-title">SETTINGS</h2>
+        
+        <p style="font-size: 8px; margin: 4px 0; font-family:'Press Start 2P', monospace;">WALL MODE</p>
+        <div class="pill-group">
+          <button class="pill-btn" data-mode-choice="classic">CLASSIC</button>
+          <button class="pill-btn" data-mode-choice="wrap">WRAP</button>
+        </div>
+
+        <p style="font-size: 8px; margin: 6px 0 4px; font-family:'Press Start 2P', monospace;">SPEED</p>
+        <div class="pill-group">
+          <button class="pill-btn" data-diff-choice="casual">CASUAL</button>
+          <button class="pill-btn" data-diff-choice="normal">NORMAL</button>
+          <button class="pill-btn" data-diff-choice="hardcore">HARD</button>
+        </div>
+
+        <p style="font-size: 8px; margin: 6px 0 4px; font-family:'Press Start 2P', monospace;">COLOR THEME</p>
+        <div class="pill-group" style="flex-wrap: wrap;">
+          <button class="pill-btn" data-theme-choice="nokia">NOKIA</button>
+          <button class="pill-btn" data-theme-choice="gameboy">GAMEBOY</button>
+          <button class="pill-btn" data-theme-choice="cyberpunk">NEON</button>
+          <button class="pill-btn" data-theme-choice="monochrome">POCKET</button>
+          <button class="pill-btn" data-theme-choice="amber">AMBER</button>
+        </div>
+
+        <div style="margin-top: 10px; width: 100%;">
+          <button id="close-settings-btn" class="btn btn--primary btn--sm">DONE</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Mobile / Touch D-Pad -->
+    <div class="dpad">
+      <button class="up" data-dir="up">&#9650;</button>
+      <button class="left" data-dir="left">&#9664;</button>
+      <button class="down" data-dir="down">&#9660;</button>
+      <button class="right" data-dir="right">&#9654;</button>
+    </div>
+
+    <p class="instructions">
+      <kbd>&#8592;</kbd> <kbd>&#8593;</kbd> <kbd>&#8594;</kbd> <kbd>&#8595;</kbd> or <kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd> to move.<br>
+      <kbd>SPACE</kbd> or <kbd>P</kbd> to Pause.
+    </p>
+  </main>
+
+  <script src="{{ url_for('static', filename='audio.js') }}"></script>
+  <script src="{{ url_for('static', filename='game.js') }}"></script>
+</body>
+</html>

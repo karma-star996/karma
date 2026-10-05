@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Snake — Game Over</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+  <main class="console">
+    <div class="console__top-bar">
+      <p class="console__brand">PY <span>&#9679;</span> SNAKE 3310</p>
+      <div class="console__nav-icons">
+        <button id="mute-btn" class="icon-btn" title="Toggle Sound">🔊</button>
+      </div>
+    </div>
+
+    <div class="screen">
+      <div class="screen__header">
+        <span>GAME OVER</span>
+        <span>&#9632;&#9632;&#9632;</span>
+      </div>
+
+      <h1 class="title" style="font-size:22px; margin: 8px 0;">GAME<br>OVER</h1>
+
+      {% if is_new_highscore %}
+      <p class="new-high">★ NEW HIGH SCORE! ★</p>
+      {% endif %}
+
+      <div class="stat-row">
+        <span>YOUR SCORE</span>
+        <span class="value" id="final-score">{{ score }}</span>
+      </div>
+      <div class="stat-row">
+        <span>HIGH SCORE</span>
+        <span class="value" id="final-highscore">{{ highscore }}</span>
+      </div>
+      <div class="stat-row">
+        <span>APPLES EATEN</span>
+        <span class="value">{{ food_eaten }}</span>
+      </div>
+      <div class="stat-row">
+        <span>MODE</span>
+        <span class="value">{{ mode }}</span>
+      </div>
+
+      <!-- Highscore submission form if qualified -->
+      {% if qualifies_for_leaderboard %}
+      <div id="save-score-section" style="margin-top: 12px; text-align: center;">
+        <p style="font-family:'Press Start 2P', monospace; font-size: 8px; color: var(--lcd-dark); margin-bottom: 6px;">ENTER INITIALS (TOP 10!)</p>
+        <form id="score-form" class="name-input-group">
+          <input type="text" id="player-name" class="name-input" maxlength="6" value="PLAYER" autofocus>
+          <button type="submit" class="btn btn--primary btn--sm" id="submit-score-btn">SAVE</button>
+        </form>
+      </div>
+      {% endif %}
+
+      <!-- Hall of Fame / Leaderboard -->
+      <div id="leaderboard-section" style="margin-top: 12px;">
+        <p style="font-family:'Press Start 2P', monospace; font-size: 8px; color: var(--lcd-mid); margin: 0 0 6px;">HALL OF FAME</p>
+        <table class="leaderboard-table" id="leaderboard-table">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>NAME</th>
+              <th>SCORE</th>
+              <th>MODE</th>
+            </tr>
+          </thead>
+          <tbody id="leaderboard-body">
+            {% for entry in leaderboard %}
+            <tr {% if entry.score == score and loop.first %}class="highlight"{% endif %}>
+              <td>{{ loop.index }}</td>
+              <td>{{ entry.name }}</td>
+              <td>{{ entry.score }}</td>
+              <td>{{ entry.mode }}</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="btn-row">
+      <a href="{{ url_for('game') }}" class="btn btn--primary">PLAY AGAIN</a>
+      <a href="{{ url_for('home') }}" class="btn btn--ghost">MENU</a>
+    </div>
+  </main>
+
+  <script src="{{ url_for('static', filename='audio.js') }}"></script>
+  <script>
+    // Theme sync
+    const savedTheme = localStorage.getItem("snake_theme") || "nokia";
+    document.body.dataset.theme = savedTheme;
+
+    // Fanfare if new highscore
+    {% if is_new_highscore %}
+    window.addEventListener("DOMContentLoaded", () => {
+      setTimeout(() => {
+        window.soundFX?.playFanfare();
+      }, 300);
+    });
+    {% endif %}
+
+    // Mute toggle
+    const muteBtn = document.getElementById("mute-btn");
+    if (muteBtn) {
+      const updateIcon = () => muteBtn.textContent = window.soundFX?.isMuted() ? "🔇" : "🔊";
+      updateIcon();
+      muteBtn.addEventListener("click", () => {
+        window.soundFX?.toggleMute();
+        updateIcon();
+      });
+    }
+
+    // Handle score submission
+    const scoreForm = document.getElementById("score-form");
+    if (scoreForm) {
+      scoreForm.addEventListener("submit", async (e) => {
+        e.preventDefault();
+        const nameInput = document.getElementById("player-name");
+        const name = (nameInput.value || "ANON").trim().toUpperCase();
+        const score = parseInt("{{ score }}", 10) || 0;
+        const mode = "{{ mode }}";
+        const foodEaten = parseInt("{{ food_eaten }}", 10) || 0;
+
+        const submitBtn = document.getElementById("submit-score-btn");
+        if (submitBtn) {
+          submitBtn.disabled = true;
+          submitBtn.textContent = "...";
+        }
+
+        try {
+          const res = await fetch("/api/score", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              name: name,
+              score: score,
+              mode: mode,
+              food_eaten: foodEaten,
+            }),
+          });
+
+          const data = await res.json();
+          if (data.success) {
+            window.soundFX?.playClick();
+            // Hide input section
+            const saveSec = document.getElementById("save-score-section");
+            if (saveSec) {
+              saveSec.innerHTML = `<p style="font-family:'Press Start 2P', monospace; font-size:8px; color:var(--lcd-mid);">RECORDED AT RANK #${data.rank || 1}!</p>`;
+            }
+
+            // Re-render table
+            const tbody = document.getElementById("leaderboard-body");
+            if (tbody && data.leaderboard) {
+              tbody.innerHTML = data.leaderboard.map((item, idx) => `
+                <tr class="${idx + 1 === data.rank ? 'highlight' : ''}">
+                  <td>${idx + 1}</td>
+                  <td>${item.name}</td>
+                  <td>${item.score}</td>
+                  <td>${item.mode || 'Classic'}</td>
+                </tr>
+              `).join("");
+            }
+          }
+        } catch (err) {
+          console.error("Failed to submit score:", err);
+        }
+      });
+    }
+  </script>
+</body>
+</html>
